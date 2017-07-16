@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(Windows) Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}\\..\\x64\\Debug\\VeraSwitch.exe",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "--help"
+            ],
+            "stopAtEntry": false,
+            "externalConsole": true,
+            "environment": [
+                {
+                    "name": "PATH",
+                    "value": "H:\\Users\\Mushfaque.Cradle\\Documents\\CPP\\lib"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,31 @@
+Timeseries factory
+5,15,30,60 minute tables
+
+CSV factory
+RSI
+SMA
+Triangle
+Technical analysis
+Bayes, configurable backward looking and forward looking item
+Simd Bayes
+
+Gui with each feature and parameters changable in real time
+Scrollable graph of tick data, on demand render
+2d graph in 3d space
+
+D3D plot 2d on main window
+D3D plot 3d with texture and shaders
+
+Portfolio viewer
+Easy entry, upload
+Real time change days and vol and price to see impact
+Monte carlo sim of vanilla, asian, bermuda, options
+Deep dive to individual and selection of stocks
+
+Vega/Theta/Portfolio optimiser with bayes input
+
+Layout panels
+Docks
+Colours
+
+Interactive brokers plugin to tick data
