@@ -4,9 +4,12 @@
 #include "Utilities.h"
 #include <algorithm>
 #include <chobo\small_vector.hpp>
+#include <chobo\vector.hpp>
+#include <concurrent_vector.h>
 #include <doctest\doctest.h>
 #include <fstream>
 #include <numeric>
+#include <ppl.h>
 #include <spdlog\spdlog.h>
 #include <vector>
 
@@ -15,7 +18,8 @@ namespace {
     // Only works for positive numbers and really only tested with dates
     auto naive_atoi(const char *buf, const int pos, const int sz) {
         if (buf == nullptr) return 0;
-        if ((pos + sz) > sizeof(buf) / sizeof(buf[0])) return 0;
+        const auto buf_size = strnlen_s(buf, 31);
+        if ((pos + sz) > buf_size) return 0;
         static int multiplier[] = {0, 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000};
         int        sum          = 0;
         for (int i = pos; i < pos + sz; i++) {
@@ -40,10 +44,10 @@ namespace {
         }
         for (auto i = sz - 1; i-- > 0;) {
             const auto lookup = buf[i] - '0';
-            if (lookup == -2) continue;
-            const auto value = lookup;
-            const auto pos   = int64_t(i - decimal_point);
-            sum += (pos > 0 ? divider[pos] : multiplier[-pos]) * value;
+            if (!(lookup == -2)) {
+                const auto pos = int64_t(i - decimal_point);
+                sum += (pos > 0 ? divider[pos] : multiplier[-pos]) * lookup;
+            }
         }
         return sum;
     }
@@ -189,22 +193,43 @@ namespace {
         string   line;
         auto row_num = size_t(0), end_row = num_lines == -1 ? UINTMAX_MAX : size_t(details->header_line + num_lines);
         auto fields = chobo::small_vector<string>(16, string());
-        auto ts     = make_unique<AARC::TSData>();
-        while (getline(in, line)) {
-            if (row_num > details->header_line) {
-                split(line, details->separator, fields.begin());
-                std::tm tm = {};
-                scnstr(tm, details->timeseries_format, fields[details->ts_column]);
-                ts->ts_.emplace_back(AARC::AARCDateTime(tm).minutes);
-                ts->open_.emplace_back(naive_atof(fields[details->open_column]));
-                ts->high_.emplace_back(naive_atof(fields[details->high_column]));
-                ts->low_.emplace_back(naive_atof(fields[details->low_column]));
-                ts->close_.emplace_back(naive_atof(fields[details->close_column]));
-            }
+        // Reading the buffer in, in one go and storing in memory is faster than a getline
+        // at a cost of memory (a few mb)
+        auto str = stringstream();
+        str << in.rdbuf();
+        auto lines = split<vector<string>>(str.str(), '\n');
+        struct DataUnit {
+            size_t ts_;
+            float  open_;
+            float  high_;
+            float  low_;
+            float  close_;
+        };
 
-            if (row_num > num_lines) break;
-            row_num++;
-        }
+        // Parse line in parallel using map/reduce metaphor
+        concurrency::concurrent_vector<DataUnit> v;
+        concurrency::parallel_for_each(begin(lines) + details->header_line + 1, end(lines), [&](const auto &line) {
+            split(line, details->separator, fields.begin());
+            std::tm tm = {};
+            scnstr(tm, details->timeseries_format, fields[details->ts_column]);
+            DataUnit du;
+            du.ts_    = AARC::AARCDateTime(tm).minutes;
+            du.open_  = naive_atof(fields[details->open_column]);
+            du.high_  = naive_atof(fields[details->high_column]);
+            du.low_   = naive_atof(fields[details->low_column]);
+            du.close_ = naive_atof(fields[details->close_column]);
+            v.push_back(du);
+        });
+        // Reduce by sort,combine.
+        sort(begin(v), end(v), [](const auto &lhs, const auto &rhs) { return lhs.ts_ < rhs.ts_; });
+        auto ts = AARC::TSData();
+        for_each(begin(v), end(v), [&ts](const auto &du) {
+            ts.ts_.emplace_back(du.ts_);
+            ts.open_.emplace_back(du.open_);
+            ts.high_.emplace_back(du.high_);
+            ts.low_.emplace_back(du.low_);
+            ts.close_.emplace_back(du.close_);
+        });
         return ts;
     }
     auto find_details(const std::string &csv_part) -> std::unique_ptr<AARC::TimeSeries_CSV::details> {
@@ -217,13 +242,13 @@ namespace {
     }
 } // namespace
 
-auto AARC::TimeSeries_CSV::read_csv_file(const std::string &filename) -> std::unique_ptr<AARC::TSData> {
+auto AARC::TimeSeries_CSV::read_csv_file(const std::string &filename) -> AARC::TSData {
     const auto csv_part = csv_part_load(filename);
     const auto details  = find_details(csv_part);
     return csv_read_line(filename, details, -1);
 }
 
-auto AARC::TimeSeries_CSV::read_csv_partial_file(const std::string &filename) -> std::unique_ptr<AARC::TSData> {
+auto AARC::TimeSeries_CSV::read_csv_partial_file(const std::string &filename) -> AARC::TSData {
     const auto csv_part = csv_part_load(filename);
     const auto details  = find_details(csv_part);
     return csv_read_line(filename, details, 20);
@@ -323,10 +348,10 @@ TEST_SUITE("Timeseries parsing") {
         "H:\\Users\\Mushfaque.Cradle\\Downloads\\HISTDATA_COM_ASCII_EURUSD_M1201703\\data2.csv";
     TEST_CASE("CSV Partial load") {
         const auto tsdata = AARC::TimeSeries_CSV::read_csv_partial_file(filename);
-        CHECK(tsdata->ts_.size() > 0);
+        CHECK(tsdata.ts_.size() > 0);
     }
     TEST_CASE("CSV full load") {
         const auto tsdata = AARC::TimeSeries_CSV::read_csv_file(filename);
-        CHECK(tsdata->ts_.size() > 0);
+        CHECK(tsdata.ts_.size() > 0);
     }
 }

@@ -11,12 +11,16 @@ namespace AARC {
     using namespace std;
 
     struct TSData {
-        uint64_t        asset_ = 0;
-        vector<int64_t> ts_;
-        vector<float>   open_;
-        vector<float>   high_;
-        vector<float>   low_;
-        vector<float>   close_;
+        TSData() = default;
+        TSData(const vector<size_t> &ts, const vector<float> &open, const vector<float> &high, const vector<float> &low,
+               const vector<float> &close)
+            : ts_(ts), open_(open), high_(high), low_(low), close_(close) {}
+        uint64_t       asset_ = 0;
+        vector<size_t> ts_;
+        vector<float>  open_;
+        vector<float>  high_;
+        vector<float>  low_;
+        vector<float>  close_;
 
         void clear() {
             ts_.clear();
@@ -24,6 +28,14 @@ namespace AARC {
             high_.clear();
             low_.clear();
             close_.clear();
+        }
+
+        void reserve(const size_t sz) {
+            ts_.reserve(sz);
+            open_.reserve(sz);
+            high_.reserve(sz);
+            low_.reserve(sz);
+            close_.reserve(sz);
         }
     };
 
@@ -57,7 +69,7 @@ namespace AARC {
         void remove_item(const int &idx) noexcept;
 
         // Grid
-        std::unique_ptr<TSData> live_data_;
+        TSData live_data_;
         // Histogram
     };
 } // namespace AARC

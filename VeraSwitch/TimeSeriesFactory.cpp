@@ -20,7 +20,7 @@ auto AARC::TimeSeriesFactory::create(const std::string &db_path, const AARC::TSD
     auto &tx  = spp::transaction(db);
     auto &cmd = spp::command(db, sql);
     for (auto i = 0UL; i < data.ts_.size(); i++) {
-        cmd.bind(":ts", data.ts_[i]);
+        cmd.bind(":ts", static_cast<int64_t>(data.ts_[i]));
         cmd.bind(":close", data.close_[i]);
         cmd.bind(":open", data.open_[i]);
         cmd.bind(":high", data.high_[i]);

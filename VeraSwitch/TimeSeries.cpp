@@ -80,7 +80,7 @@ void AARC::TimeSeriesMgr::run(bool &show) {
         ImGui::Begin(wnd_title, &show, ImVec2(500, 500), 0.8f, ImGuiWindowFlags_NoResize);
         if (ImGui::InputText("Filename", file_to_load.data(), MAX_PATH, flags) == true) {
             spdlog::get("logger")->debug(" inputtext box changed {}", file_to_load.data());
-            if (experimental::filesystem::exists(file_to_load.data()) > 0) {
+            if (experimental::filesystem::exists(file_to_load.data())) {
                 spdlog::get("logger")->debug(" file exists {}", file_to_load.data());
                 textboxfilename = file_to_load.data();
                 add_item(textboxfilename);
@@ -127,49 +127,49 @@ void AARC::TimeSeriesMgr::run(bool &show) {
             stb_snprintf(wnd_title, 128, "Import CSV for: %s", asset);
         }
         // Grid
-        if (!live_data_->ts_.empty()) {
+        if (!live_data_.ts_.empty()) {
             ImGui::Columns(5, "Timeseries");
             ImGui::Text("Timestamp");
-            const auto sz = live_data_->ts_.size();
+            const auto sz = live_data_.ts_.size();
             for (int i = 0UL; i < sz; i++) {
                 std::array<char, 16> row;
-                stb_snprintf(row.data(), row.size(), "%d", live_data_->ts_[i]);
+                stb_snprintf(row.data(), row.size(), "%d", live_data_.ts_[i]);
                 ImGui::Selectable(row.data(), false, ImGuiSelectableFlags_SpanAllColumns);
             }
             ImGui::NextColumn();
             ImGui::Text("Open");
             for (int i = 0UL; i < sz; i++) {
                 std::array<char, 16> row;
-                stb_snprintf(row.data(), row.size(), "%.4f", live_data_->open_[i]);
+                stb_snprintf(row.data(), row.size(), "%.4f", live_data_.open_[i]);
                 ImGui::Selectable(row.data(), false, ImGuiSelectableFlags_SpanAllColumns);
             }
             ImGui::NextColumn();
             ImGui::Text("High");
             for (int i = 0UL; i < sz; i++) {
                 std::array<char, 16> row;
-                stb_snprintf(row.data(), row.size(), "%.4f", live_data_->high_[i]);
+                stb_snprintf(row.data(), row.size(), "%.4f", live_data_.high_[i]);
                 ImGui::Selectable(row.data(), false, ImGuiSelectableFlags_SpanAllColumns);
             }
             ImGui::NextColumn();
             ImGui::Text("Low");
             for (int i = 0UL; i < sz; i++) {
                 std::array<char, 16> row;
-                stb_snprintf(row.data(), row.size(), "%.4f", live_data_->low_[i]);
+                stb_snprintf(row.data(), row.size(), "%.4f", live_data_.low_[i]);
                 ImGui::Selectable(row.data(), false, ImGuiSelectableFlags_SpanAllColumns);
             }
             ImGui::NextColumn();
             ImGui::Text("Close");
             for (int i = 0UL; i < sz; i++) {
                 std::array<char, 16> row;
-                stb_snprintf(row.data(), row.size(), "%.4f", live_data_->close_[i]);
+                stb_snprintf(row.data(), row.size(), "%.4f", live_data_.close_[i]);
                 ImGui::Selectable(row.data(), false, ImGuiSelectableFlags_SpanAllColumns);
             }
             ImGui::NextColumn();
             ImGui::Separator();
             ImGui::Columns(1);
 
-            const auto minmax = std::minmax_element(std::begin(live_data_->close_), std::end(live_data_->close_));
-            ImGui::PlotLines("Close", live_data_->close_.data(), live_data_->close_.size() - 1, 0, 0,
+            const auto minmax = std::minmax_element(std::begin(live_data_.close_), std::end(live_data_.close_));
+            ImGui::PlotLines("Close", live_data_.close_.data(), live_data_.close_.size() - 1, 0, 0,
                              *std::get<0>(minmax), *std::get<1>(minmax), ImVec2(300, 50));
         }
 

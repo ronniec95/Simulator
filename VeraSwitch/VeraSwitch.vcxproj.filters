@@ -46,6 +46,7 @@
     <ClCompile Include="TimeSeriesCSVFactory.cpp">
       <Filter>IO</Filter>
     </ClCompile>
+    <ClCompile Include="TechnicalAnalysis.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\CPP\include\linmath.h">
@@ -80,5 +81,6 @@
     <ClInclude Include="TimeSeriesCSVFactory.h">
       <Filter>IO</Filter>
     </ClInclude>
+    <ClInclude Include="TechnicalAnalysis.h" />
   </ItemGroup>
 </Project>

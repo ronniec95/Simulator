@@ -166,6 +166,7 @@
     <ClCompile Include="AARCDateTime.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="TechnicalAnalysis.cpp" />
     <ClCompile Include="TimeSeries.cpp" />
     <ClCompile Include="TimeSeriesCSVFactory.cpp" />
     <ClCompile Include="TimeSeriesFactory.cpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="include\spdlog\tweakme.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="Registry.h" />
+    <ClInclude Include="TechnicalAnalysis.h" />
     <ClInclude Include="TimeSeries.h" />
     <ClInclude Include="TimeSeriesCSVFactory.h" />
     <ClInclude Include="TimeSeriesFactory.h" />
