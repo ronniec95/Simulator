@@ -42,6 +42,7 @@ namespace {
                 break;
             }
         }
+
         for (auto i = sz - 1; i-- > 0;) {
             const auto lookup = buf[i] - '0';
             if (!(lookup == -2)) {
@@ -205,21 +206,22 @@ namespace {
             float  low_;
             float  close_;
         };
-
         // Parse line in parallel using map/reduce metaphor
         concurrency::concurrent_vector<DataUnit> v;
-        concurrency::parallel_for_each(begin(lines) + details->header_line + 1, end(lines), [&](const auto &line) {
-            split(line, details->separator, fields.begin());
-            std::tm tm = {};
-            scnstr(tm, details->timeseries_format, fields[details->ts_column]);
-            DataUnit du;
-            du.ts_    = AARC::AARCDateTime(tm).minutes;
-            du.open_  = naive_atof(fields[details->open_column]);
-            du.high_  = naive_atof(fields[details->high_column]);
-            du.low_   = naive_atof(fields[details->low_column]);
-            du.close_ = naive_atof(fields[details->close_column]);
-            v.push_back(du);
-        });
+        v.reserve(lines.size()); // Arena allocation
+        concurrency::parallel_for_each(begin(lines) + details->header_line + 1, end(lines),
+                                       [&details, &fields, &v](const auto &ln) {
+                                           split(ln, details->separator, fields.begin());
+                                           std::tm tm = {};
+                                           scnstr(tm, details->timeseries_format, fields[details->ts_column]);
+                                           DataUnit du;
+                                           du.ts_    = AARC::AARCDateTime(tm).minutes;
+                                           du.open_  = naive_atof(fields[details->open_column]);
+                                           du.high_  = naive_atof(fields[details->high_column]);
+                                           du.low_   = naive_atof(fields[details->low_column]);
+                                           du.close_ = naive_atof(fields[details->close_column]);
+                                           v.push_back(du);
+                                       });
         // Reduce by sort,combine.
         sort(begin(v), end(v), [](const auto &lhs, const auto &rhs) { return lhs.ts_ < rhs.ts_; });
         auto ts = AARC::TSData();

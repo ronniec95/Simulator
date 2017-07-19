@@ -31,8 +31,23 @@ template <typename Out> auto split(const std::string &s, char delim) -> Out {
     Out result;
     for (auto i = 0UL, start = 0UL; i < s.size(); i++) {
         if (s[i] == delim) {
-            // Using emplace to directly construct the string 'in place', avoiding a temporary
+            // Using emplace to directly construct the string 'in place', avoiding a temporary (string mem alloc
+            // happening here :( )
             result.emplace_back(begin(s) + start, begin(s) + i);
+            start = i + 1;
+        }
+    }
+    return result;
+}
+
+inline auto split_iter(const std::string &s, char delim)
+    -> std::vector<std::pair<std::string::const_iterator, std::string::const_iterator>> {
+    auto result = std::vector<std::pair<std::string::const_iterator, std::string::const_iterator>>();
+    for (auto i = 0UL, start = 0UL; i < s.size(); i++) {
+        if (s[i] == delim) {
+            // Using emplace to directly construct the string 'in place', avoiding a temporary (string mem alloc
+            // happening here :( )
+            result.emplace_back(make_pair(begin(s) + start, begin(s) + i));
             start = i + 1;
         }
     }
@@ -50,6 +65,5 @@ class MethodLogger {
     const std::string               method_;
     std::shared_ptr<spdlog::logger> logger_ = spdlog::get("logger");
 };
-
 
 // 4,4,5,5,9,9,9,9,5,6,6,6
