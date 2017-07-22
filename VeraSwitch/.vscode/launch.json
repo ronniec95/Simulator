@@ -7,9 +7,7 @@
             "request": "launch",
             "program": "${workspaceRoot}\\..\\x64\\Debug\\VeraSwitch.exe",
             "cwd": "${workspaceRoot}",
-            "args": [
-                "--help"
-            ],
+            "args": [],
             "stopAtEntry": false,
             "externalConsole": true,
             "environment": [

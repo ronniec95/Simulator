@@ -1,4 +1,5 @@
 #pragma once
+#include <utility>
 #include <vector>
 
 namespace AARC {
@@ -22,9 +23,15 @@ namespace AARC {
         auto period_returns(const TSData &in, const size_t look_ahead_period,
                             const size_t start = std::numeric_limits<size_t>::min(),
                             const size_t fin   = std::numeric_limits<size_t>::max()) -> std::vector<float>;
-        // auto rsi(const TSData &in, const size_t start, const size_t fin) -> vector<double>;
+
+        /* Talking a float array and calculates the histogram buckets , and returns as a tuple of bucket,count */
+        auto histogram(const std::vector<float> &in, const float bucket_size) -> std::vector<size_t>;
+
+        /* RSI with parameters */
+        auto rsi(const std::vector<float> &in, const size_t period) -> std::vector<float>;
+
         // auto macd(const TSData &in, const size_t start, const size_t fin) -> vector<double>;
         // auto stoch(const TSData &in, const size_t start, const size_t fin) -> vector<double>;
-        // auto sma(const TSData &in, const size_t start, const size_t fin) -> vector<double>;
+        auto ema(const std::vector<float> &in, const size_t period) -> std::vector<float>;
     } // namespace TA
 } // namespace AARC

@@ -193,7 +193,6 @@ namespace {
         ifstream in(filename);
         string   line;
         auto row_num = size_t(0), end_row = num_lines == -1 ? UINTMAX_MAX : size_t(details->header_line + num_lines);
-        auto fields = chobo::small_vector<string>(16, string());
         // Reading the buffer in, in one go and storing in memory is faster than a getline
         // at a cost of memory (a few mb)
         auto str = stringstream();
@@ -208,9 +207,10 @@ namespace {
         };
         // Parse line in parallel using map/reduce metaphor
         concurrency::concurrent_vector<DataUnit> v;
-        v.reserve(lines.size()); // Arena allocation
+        v.reserve(lines.size());
         concurrency::parallel_for_each(begin(lines) + details->header_line + 1, end(lines),
-                                       [&details, &fields, &v](const auto &ln) {
+                                       [&details, &v](const auto &ln) {
+                                           auto fields = chobo::small_vector<string>(16, string());
                                            split(ln, details->separator, fields.begin());
                                            std::tm tm = {};
                                            scnstr(tm, details->timeseries_format, fields[details->ts_column]);

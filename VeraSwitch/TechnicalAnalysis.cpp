@@ -1,5 +1,6 @@
 #include "TechnicalAnalysis.h"
 #include "TimeSeries.h"
+#include <deque>
 #include <doctest\doctest.h>
 #include <future>
 #include <numeric>
@@ -60,18 +61,85 @@ auto AARC::TA::period_returns(const TSData &in, const size_t look_ahead_period, 
     // Find the boundaries
     const auto lb = lower_bound(begin(in.ts_), end(in.ts_), start), ub = upper_bound(begin(in.ts_), end(in.ts_), fin);
     if (lb == ub) return std::vector<float>(); // RVO
-    const auto  min_idx = static_cast<size_t>(distance(begin(in.ts_), lb));
-    const auto  max_idx = distance(begin(in.ts_), ub) - look_ahead_period;
-    const auto &closes  = in.close_;
+    const auto min_idx = static_cast<size_t>(distance(begin(in.ts_), lb));
+    const auto max_idx = distance(begin(in.ts_), ub) - look_ahead_period;
 
     vector<float> results;
-    results.reserve(max_idx - min_idx);
-    for (auto i = min_idx; i < max_idx; i++) {
-        const auto v0 = closes[i];
-        const auto v1 = closes[i + look_ahead_period];
-        results.emplace_back((static_cast<float>(v1) / static_cast<float>(v0)) - 1.0f);
-    }
+    generate_n(back_inserter(results), max_idx - min_idx,
+               [ i = min_idx, closes = in.close_, &look_ahead_period ]() mutable {
+                   const auto v0 = closes[i];
+                   const auto v1 = closes[i + look_ahead_period];
+                   i++;
+                   return (static_cast<float>(v1) / static_cast<float>(v0)) - 1.0f;
+               });
     return results;
+}
+
+auto AARC::TA::histogram(const std::vector<float> &in, const float bucket_size) -> std::vector<size_t> {
+    using namespace std;
+    if (in.empty() || bucket_size == 0) return vector<size_t>();
+    // Find range for buckets
+    const auto min_max_elem = minmax_element(begin(in), end(in));
+    const auto min_e = *get<0>(min_max_elem), max_e = *get<1>(min_max_elem);
+    const auto buckets = static_cast<size_t>((max_e - min_e) / bucket_size);
+    if (buckets <= 1) return vector<size_t>();
+    auto bins = vector<size_t>(buckets + 1);
+    // Each element is independent which is implicit when using stl algorithms
+    // so we can easily parallelise it
+    concurrency::parallel_for_each(begin(in), end(in), [&buckets, &bins, max_e, min_e](const auto val) {
+        const auto bucket_idx = static_cast<size_t>(((val - min_e) / (max_e - min_e)) * buckets);
+        bins[bucket_idx]++;
+    });
+    return bins;
+}
+
+/* RSI is typically a n2 algorithm if implemented naively but by scarficing a couple of array traversals to calculate
+the prefix sum you can then calculate the Up/Down ratio as a 1 add + 1 divide linearly. It also then means you can
+parallelise it
+*/
+auto AARC::TA::rsi(const std::vector<float> &in, const size_t period) -> std::vector<float> {
+    using namespace std;
+    if (in.empty() || period == 0) return vector<float>();
+    if (in.size() <= period) return in;
+
+    auto          rsi_out = vector<float>(in.size() - period);
+    vector<float> up_prefix_sum;
+    partial_sum(begin(in), end(in), back_inserter(up_prefix_sum), [prev = in.front()](auto sum, auto val) mutable {
+        const auto p_sum = (val > prev) ? sum + val : sum;
+        prev             = val;
+        return p_sum;
+    });
+    vector<float> down_prefix_sum;
+    partial_sum(begin(in), end(in), back_inserter(down_prefix_sum), [prev = in.front()](auto sum, auto val) mutable {
+        const auto p_sum = (val < prev) ? sum + val : sum;
+        prev             = val;
+        return p_sum;
+    });
+
+    vector<float> rs;
+    generate_n(back_inserter(rs), in.size() - period, [ i = 1, &up_prefix_sum, &down_prefix_sum, &period ]() {
+        const auto up   = up_prefix_sum[i + period] - up_prefix_sum[i];
+        const auto down = down_prefix_sum[i + period] - down_prefix_sum[i];
+        return up/(down == 0.0f ? 0.0000001f : down);
+    });
+    rs = ema(rs, period / 5);
+    for_each(begin(rs),end(rs),[](auto& val){
+        val = 100.0f - 100.0f/(1.0f + val);
+    });    
+    return rs;
+}
+
+auto AARC::TA::ema(const std::vector<float> &in, const size_t period) -> std::vector<float> {
+    if (in.empty() || period == 0) return std::vector<float>();
+    if (in.size() <= period) return in;
+    auto ema_ =
+        accumulate(begin(in), end(in), vector<float>(),
+                   [ prev = in.front(), alpha = 1.0f / static_cast<float>(period) ](auto &acc, auto val) mutable {
+                       prev = alpha * val + (1.0f - alpha) * prev;
+                       acc.emplace_back(prev);
+                       return acc;
+                   });
+    return ema_;
 }
 
 #ifdef _TEST
@@ -79,6 +147,7 @@ auto AARC::TA::period_returns(const TSData &in, const size_t look_ahead_period, 
 #endif
 
 TEST_CASE("Resample timeseries") {
+#if 0
     static auto const filename =
         "H:\\Users\\Mushfaque.Cradle\\Downloads\\HISTDATA_COM_ASCII_EURUSD_M1201703\\data2.csv";
     const auto input = AARC::TimeSeries_CSV::read_csv_file(filename);
@@ -98,9 +167,11 @@ TEST_CASE("Resample timeseries") {
         const auto out = AARC::TA::resample(input, 60 * 24 * 3);
         CHECK(out.ts_.size() >= (input.ts_.size() / (60 * 24 * 3)));
     }
+#endif
 }
 
 TEST_CASE("Period returns") {
+#if 0
     static auto const filename =
         "H:\\Users\\Mushfaque.Cradle\\Downloads\\HISTDATA_COM_ASCII_EURUSD_M1201703\\data2.csv";
     const auto input = AARC::TimeSeries_CSV::read_csv_file(filename);
@@ -120,4 +191,19 @@ TEST_CASE("Period returns") {
             AARC::TA::period_returns(input, 3, input.ts_[input.ts_.size() / 3], input.ts_[input.ts_.size() / 2]);
         CHECK(!out.empty());
     }
+#endif
+}
+
+TEST_CASE("Histogram") {
+    static auto const filename =
+        "H:\\Users\\Mushfaque.Cradle\\Downloads\\HISTDATA_COM_ASCII_EURUSD_M1201703\\data2.csv";
+    const auto input     = AARC::TimeSeries_CSV::read_csv_file(filename);
+    const auto p_returns = AARC::TA::period_returns(input, 3, input.ts_[0], std::numeric_limits<size_t>::max());
+    CHECK(!p_returns.empty());
+    const auto out2 = AARC::TA::histogram(p_returns, 0.001f);
+    CHECK(!out2.empty());
+    const auto ema = AARC::TA::ema(input.close_, 10);
+    CHECK(!ema.empty());
+    const auto rsi = AARC::TA::rsi(input.close_, 10);
+    CHECK(!rsi.empty());
 }

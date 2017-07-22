@@ -57,6 +57,9 @@
         "csignal": "cpp",
         "cstdarg": "cpp",
         "cwctype": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "list": "cpp",
+        "stb_vorbis.c": "cpp",
+        "*.ipp": "cpp"
     }
 }
