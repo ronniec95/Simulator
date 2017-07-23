@@ -13,14 +13,17 @@
 #include <doctest\doctest.h>
 #include <experimental\filesystem>
 #include <fstream>
+#include <future>
 #include <imgui.h>
 #include <imgui_user.h>
 #include <iomanip>
 #include <nfd.h>
 #include <numeric>
+#include <ppltasks.h>
 #include <stb.h>
 #include <stb_sprintf.h>
 #include <sys/stat.h>
+#include <thread>
 
 namespace spd = spdlog;
 
@@ -53,10 +56,29 @@ void AARC::TimeSeriesMgr::remove_item(const int &idx) noexcept {
     }
 }
 
-namespace {} // namespace
+namespace {
+    const auto reg_sqlite_location = "AARCSim\\Database";
+    const auto reg_sqlite_key      = "SQLiteLocation";
 
-const auto reg_sqlite_location = "AARCSim\\Database";
-const auto reg_sqlite_key      = "SQLiteLocation";
+    auto save_files(const std::vector<std::string> &filenames, const std::string &asset) -> void {
+        const auto db = AARC::Registry::read_string(reg_sqlite_location, reg_sqlite_key);
+        std::for_each(begin(filenames), end(filenames), [ db = db, asset = asset ](const auto &filename) {
+            concurrency::create_task([&db, &asset, &filename]() {
+                auto asset_id = std::async(
+                    std::launch::async, [&db, &asset]() { return AARC::AssetFactory::select_by_name(db, asset)->id_; });
+                auto tsdata = std::async(std::launch::async,
+                                         [&filename]() { return AARC::TimeSeries_CSV::read_csv_file(filename); });
+                return tsdata.get();
+            })
+                .then([db = db](const AARC::TSData &tsdata) {
+                    // Create 5m,10m,30m,1hr
+                    AARC::TimeSeriesFactory::remove(db, tsdata.asset_, tsdata.ts_.front(), tsdata.ts_.back());
+                    AARC::TimeSeriesFactory::create(db, tsdata);
+                    return true;
+                });
+        });
+    }
+} // namespace
 
 void AARC::TimeSeriesMgr::init() {
     MethodLogger mlog("TimeSeriesMgr::TimeSeriesMgr");
@@ -176,6 +198,7 @@ void AARC::TimeSeriesMgr::run(bool &show) {
         ImGui::PushItemWidth(-100);
         if (ImGui::Button("OK", ImVec2(100, 32))) {
             // Kick off async threads per file to save to the database
+            save_files(filenames, asset);
             show = false;
         }
         ImGui::SameLine();

@@ -1,5 +1,6 @@
 #include "TimeSeriesCSVFactory.h"
 #include "AARCDateTime.h"
+#include "Split.h"
 #include "TimeSeries.h"
 #include "Utilities.h"
 #include <algorithm>
@@ -10,6 +11,7 @@
 #include <fstream>
 #include <numeric>
 #include <ppl.h>
+#include <ppltasks.h>
 #include <spdlog\spdlog.h>
 #include <vector>
 
@@ -185,19 +187,32 @@ namespace {
         return line;
     }
 
+    auto split_f(const std::string &s, char delim) -> std::vector<std::string> {
+        std::vector<std::string> result;
+        for (auto i = size_t(0); i < s.size();) {
+            int pos = i;
+            ispc::find_char(reinterpret_cast<const uint8_t *>(s.data()), i, s.size(), delim, pos);
+            result.emplace_back(begin(s) + i, begin(s) + pos);
+            i = pos + 1;
+        }
+        return result;
+    }
+
     // Read a specified number of non-blank lines, starting from the header row
     // and return as a TSData object
     auto csv_read_line(const std::string &filename, const std::unique_ptr<AARC::TimeSeries_CSV::details> &details,
                        const size_t num_lines) {
         using namespace std;
+
         ifstream in(filename);
         string   line;
         auto row_num = size_t(0), end_row = num_lines == -1 ? UINTMAX_MAX : size_t(details->header_line + num_lines);
         // Reading the buffer in, in one go and storing in memory is faster than a getline
         // at a cost of memory (a few mb)
+
         auto str = stringstream();
-        str << in.rdbuf();
-        auto lines = split<vector<string>>(str.str(), '\n');
+        str << in.rdbuf();                     // 14
+        auto lines = split_f(str.str(), '\n'); // 5ms
         struct DataUnit {
             size_t ts_;
             float  open_;
@@ -206,12 +221,12 @@ namespace {
             float  close_;
         };
         // Parse line in parallel using map/reduce metaphor
-        concurrency::concurrent_vector<DataUnit> v;
+        vector<DataUnit> v;
         v.reserve(lines.size());
         concurrency::parallel_for_each(begin(lines) + details->header_line + 1, end(lines),
                                        [&details, &v](const auto &ln) {
                                            auto fields = chobo::small_vector<string>(16, string());
-                                           split(ln, details->separator, fields.begin());
+                                           split(ln, details->separator, fields.begin()); // 22ms
                                            std::tm tm = {};
                                            scnstr(tm, details->timeseries_format, fields[details->ts_column]);
                                            DataUnit du;
@@ -221,10 +236,12 @@ namespace {
                                            du.low_   = naive_atof(fields[details->low_column]);
                                            du.close_ = naive_atof(fields[details->close_column]);
                                            v.push_back(du);
-                                       });
+                                       }); // 17
         // Reduce by sort,combine.
-        sort(begin(v), end(v), [](const auto &lhs, const auto &rhs) { return lhs.ts_ < rhs.ts_; });
+        concurrency::parallel_sort(begin(v), end(v),
+                                   [](const auto &lhs, const auto &rhs) { return lhs.ts_ < rhs.ts_; }); // 2
         auto ts = AARC::TSData();
+        ts.reserve(v.size());
         for_each(begin(v), end(v), [&ts](const auto &du) {
             ts.ts_.emplace_back(du.ts_);
             ts.open_.emplace_back(du.open_);

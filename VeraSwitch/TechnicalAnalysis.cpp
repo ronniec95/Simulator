@@ -7,6 +7,7 @@
 #include <ppl.h>
 #include <spdlog\spdlog.h>
 #include <vector>
+#include "Split.h"
 
 auto AARC::TA::resample(const AARC::TSData &in, const int mins) -> const AARC::TSData {
     using namespace std;
@@ -26,6 +27,7 @@ auto AARC::TA::resample(const AARC::TSData &in, const int mins) -> const AARC::T
         if (lb == ub) return {0, 0}; /* These are invalid positions, caused by gaps in data or weekends */
         return {distance(begin(in.ts_), lb), distance(begin(in.ts_), ub) - 1 /* need the index here so -1 */};
     });
+
     auto open = async(launch::async, [&positions, &in]() {
         return accumulate(begin(positions), end(positions), vector<float>(), [&in](auto &acc, const auto pos) {
             acc.emplace_back(in.open_[get<0>(pos)]);
@@ -51,6 +53,7 @@ auto AARC::TA::resample(const AARC::TSData &in, const int mins) -> const AARC::T
             return acc;
         });
     });
+
     return TSData(in.ts_, open.get(), high.get(), low.get(), close.get());
 }
 
@@ -93,7 +96,7 @@ auto AARC::TA::histogram(const std::vector<float> &in, const float bucket_size) 
     return bins;
 }
 
-/* RSI is typically a n2 algorithm if implemented naively but by scarficing a couple of array traversals to calculate
+/* RSI is typically a n2 algorithm if implemented naively but by sacrificing a couple of array traversals to calculate
 the prefix sum you can then calculate the Up/Down ratio as a 1 add + 1 divide linearly. It also then means you can
 parallelise it
 */
@@ -102,43 +105,46 @@ auto AARC::TA::rsi(const std::vector<float> &in, const size_t period) -> std::ve
     if (in.empty() || period == 0) return vector<float>();
     if (in.size() <= period) return in;
 
-    auto          rsi_out = vector<float>(in.size() - period);
-    vector<float> up_prefix_sum;
-    partial_sum(begin(in), end(in), back_inserter(up_prefix_sum), [prev = in.front()](auto sum, auto val) mutable {
-        const auto p_sum = (val > prev) ? sum + val : sum;
-        prev             = val;
-        return p_sum;
+    auto rsi_out       = vector<float>(in.size() - period);
+    auto up_prefix_sum = async(launch::async, [&in]() {
+        vector<float> up_prefix_sum;
+        partial_sum(begin(in), end(in), back_inserter(up_prefix_sum), [prev = in.front()](auto sum, auto val) mutable {
+            const auto p_sum = (val > prev) ? sum + val : sum;
+            prev             = val;
+            return p_sum;
+        });
+        return up_prefix_sum;
     });
-    vector<float> down_prefix_sum;
-    partial_sum(begin(in), end(in), back_inserter(down_prefix_sum), [prev = in.front()](auto sum, auto val) mutable {
-        const auto p_sum = (val < prev) ? sum + val : sum;
-        prev             = val;
-        return p_sum;
+
+    auto down_prefix_sum = async(launch::async, [&in]() {
+        vector<float> down_prefix_sum;
+        partial_sum(begin(in), end(in),
+                    back_inserter(down_prefix_sum), [prev = in.front()](auto sum, auto val) mutable {
+                        const auto p_sum = (val < prev) ? sum + val : sum;
+                        prev             = val;
+                        return p_sum;
+                    });
+        return down_prefix_sum;
     });
 
     vector<float> rs;
-    generate_n(back_inserter(rs), in.size() - period, [ i = 1, &up_prefix_sum, &down_prefix_sum, &period ]() {
-        const auto up   = up_prefix_sum[i + period] - up_prefix_sum[i];
-        const auto down = down_prefix_sum[i + period] - down_prefix_sum[i];
-        return up/(down == 0.0f ? 0.0000001f : down);
-    });
+    generate_n(back_inserter(rs), in.size() - period,
+               [ i = 0, up_ps = up_prefix_sum.get(), down_ps = down_prefix_sum.get(), &period ]() mutable {
+                   const auto up   = up_ps[i + period] - up_ps[i];
+                   const auto down = down_ps[i + period] - down_ps[i];
+                   i++;
+                   return up / (down == 0.0f ? 0.0000001f : down);
+               });
     rs = ema(rs, period / 5);
-    for_each(begin(rs),end(rs),[](auto& val){
-        val = 100.0f - 100.0f/(1.0f + val);
-    });    
+    ispc::rsi_summary(const_cast<float*>(rs.data()),rs.size());
     return rs;
 }
 
 auto AARC::TA::ema(const std::vector<float> &in, const size_t period) -> std::vector<float> {
     if (in.empty() || period == 0) return std::vector<float>();
-    if (in.size() <= period) return in;
-    auto ema_ =
-        accumulate(begin(in), end(in), vector<float>(),
-                   [ prev = in.front(), alpha = 1.0f / static_cast<float>(period) ](auto &acc, auto val) mutable {
-                       prev = alpha * val + (1.0f - alpha) * prev;
-                       acc.emplace_back(prev);
-                       return acc;
-                   });
+    if (in.size() <= period) return in;   
+    auto ema_ = vector<float>(in.size() - 1);
+    ispc::ema(in.data(), const_cast<float*>(ema_.data()), ema_.size(), period);
     return ema_;
 }
 
@@ -147,51 +153,32 @@ auto AARC::TA::ema(const std::vector<float> &in, const size_t period) -> std::ve
 #endif
 
 TEST_CASE("Resample timeseries") {
-#if 0
     static auto const filename =
         "H:\\Users\\Mushfaque.Cradle\\Downloads\\HISTDATA_COM_ASCII_EURUSD_M1201703\\data2.csv";
     const auto input = AARC::TimeSeries_CSV::read_csv_file(filename);
-    SUBCASE("No data") {
-        const auto out = AARC::TA::resample(AARC::TSData(), 0);
-        CHECK(out.ts_.empty());
-    }
-    SUBCASE("5 minute") {
-        const auto out = AARC::TA::resample(input, 5);
-        CHECK(out.ts_.size() >= (input.ts_.size() / 5));
-    }
-    SUBCASE("Daily") {
-        const auto out = AARC::TA::resample(input, 60 * 24);
-        CHECK(out.ts_.size() >= (input.ts_.size() / (60 * 24)));
-    }
-    SUBCASE("3 Day") {
-        const auto out = AARC::TA::resample(input, 60 * 24 * 3);
-        CHECK(out.ts_.size() >= (input.ts_.size() / (60 * 24 * 3)));
-    }
-#endif
+    const auto out   = AARC::TA::resample(AARC::TSData(), 0);
+    CHECK(out.ts_.empty());
+    const auto out1 = AARC::TA::resample(input, 5);
+    CHECK(out1.ts_.size() >= (input.ts_.size() / 5));
+    const auto out2 = AARC::TA::resample(input, 60 * 24);
+    CHECK(out2.ts_.size() >= (input.ts_.size() / (60 * 24)));
+    const auto out3 = AARC::TA::resample(input, 60 * 24 * 3);
+    CHECK(out3.ts_.size() >= (input.ts_.size() / (60 * 24 * 3)));
 }
 
 TEST_CASE("Period returns") {
-#if 0
     static auto const filename =
         "H:\\Users\\Mushfaque.Cradle\\Downloads\\HISTDATA_COM_ASCII_EURUSD_M1201703\\data2.csv";
     const auto input = AARC::TimeSeries_CSV::read_csv_file(filename);
-
-    SUBCASE("No data") { AARC::TA::period_returns(AARC::TSData(), 3, 0, std::numeric_limits<size_t>::max()); }
-    SUBCASE("Full array") {
-        const auto out = AARC::TA::period_returns(input, 3, input.ts_[0], std::numeric_limits<size_t>::max());
-        CHECK(out.back() - (input.close_.back() / input.close_[input.close_.size() - 3]) < 0.000001);
-    }
-    SUBCASE("Partial array") {
-
-        // Invalid index
-        const auto out1 = AARC::TA::period_returns(input, 3, input.ts_.size() / 3, input.ts_.size() / 2);
-        CHECK(out1.empty());
-
-        const auto out =
-            AARC::TA::period_returns(input, 3, input.ts_[input.ts_.size() / 3], input.ts_[input.ts_.size() / 2]);
-        CHECK(!out.empty());
-    }
-#endif
+    AARC::TA::period_returns(AARC::TSData(), 3, 0, std::numeric_limits<size_t>::max());
+    const auto out = AARC::TA::period_returns(input, 3, input.ts_[0], std::numeric_limits<size_t>::max());
+    CHECK(out.back() - (input.close_.back() / input.close_[input.close_.size() - 3]) < 0.000001);
+    // Invalid index
+    const auto out1 = AARC::TA::period_returns(input, 3, input.ts_.size() / 3, input.ts_.size() / 2);
+    CHECK(out1.empty());
+    const auto out2 =
+        AARC::TA::period_returns(input, 3, input.ts_[input.ts_.size() / 3], input.ts_[input.ts_.size() / 2]);
+    CHECK(!out2.empty());
 }
 
 TEST_CASE("Histogram") {

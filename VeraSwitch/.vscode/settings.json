@@ -60,6 +60,8 @@
         "filesystem": "cpp",
         "list": "cpp",
         "stb_vorbis.c": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "iterator": "cpp",
+        "xkeycheck.h": "c"
     }
 }

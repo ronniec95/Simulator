@@ -82,5 +82,11 @@
       <Filter>IO</Filter>
     </ClInclude>
     <ClInclude Include="TechnicalAnalysis.h" />
+    <ClInclude Include="Split.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Split.ispc" />
   </ItemGroup>
 </Project>

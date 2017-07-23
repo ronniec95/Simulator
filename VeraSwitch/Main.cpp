@@ -52,27 +52,4 @@ int main(int argc, char **argv) {
     logger->flush();
     return 0;
 }
-
-TEST_CASE("Zion") {
-    int         width    = 5; // the number of cells on the X axis
-    int         height   = 1; // the number of cells on the Y axis
-    std::string lines[1] = {"0.0.0"};
-    for (int j = 0; j < height; j++) {
-        std::string line = lines[j];
-        for (int i = 0; i < line.size(); i++) {
-            char ch = line[i];
-            if (ch == '0') {
-                const bool has_neighbour_x = i + 1 < width; // && j + 1 < height;
-                const bool has_neighbour_y = j + 1 < height;
-                const auto x1              = i;
-                const auto y1              = j;
-                const auto x2              = has_neighbour_x ? i + 1 : -1;
-                const auto y2              = has_neighbour_x ? j : -1;
-                const auto x3              = has_neighbour_y ? i : -1;
-                const auto y3              = has_neighbour_y ? j + 1 : -1;
-                printf("%d %d %d %d %d %d\n", x1, y1, x2, y2, x3, y3);
-            }
-        }
-    }
-}
 #endif

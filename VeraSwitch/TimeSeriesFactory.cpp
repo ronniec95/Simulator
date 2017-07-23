@@ -7,7 +7,7 @@
 #include <sqlite3pp.h>
 namespace spp = sqlite3pp;
 
-auto AARC::TimeSeriesFactory::create(const std::string &db_path, const AARC::TSData &data) {
+auto AARC::TimeSeriesFactory::create(const std::string &db_path, const AARC::TSData &data) -> void {
     MethodLogger mlog("TimeSeriesFactory::create");
     if (db_path.empty()) {
         mlog.logger()->error("SQLite path not set while trying to load asset");
@@ -33,7 +33,7 @@ auto AARC::TimeSeriesFactory::create(const std::string &db_path, const AARC::TSD
 }
 
 auto AARC::TimeSeriesFactory::remove(const std::string &db_path, const uint64_t asset_id, const uint64_t start,
-                                     const uint64_t end) {
+                                     const uint64_t end) -> void {
     MethodLogger mlog("TimeSeriesFactory::create");
     if (db_path.empty()) {
         mlog.logger()->error("SQLite path not set while trying to load asset");
