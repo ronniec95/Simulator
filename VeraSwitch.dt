@@ -1,39 +1,49 @@
 <?xml version="1.0" encoding="utf-16"?>
-<DevTrackerData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" SolutionTotalEditTime="PT1H5M21.4636662S" SolutionTotalViewTime="PT1H34M49.7208296S" SolutionTotalDebugTime="PT1H13M30.7656139S">
+<DevTrackerData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" SolutionTotalEditTime="PT1H5M21.4636662S" SolutionTotalViewTime="PT1H37M48.3112739S" SolutionTotalDebugTime="PT1H15M3.1760329S">
   <FileVersion>
     <Major>1</Major>
     <Minor>0</Minor>
   </FileVersion>
   <SessionTimeList />
   <LastSessionTimeList>
-    <DevTrackerDataItem ViewActiveTime="PT5.8972041S" EditActiveTime="PT0S">
+    <DevTrackerDataItem ViewActiveTime="PT1M32.410419S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>Debug Mode</Item>
+      <ItemType>DebugModeItem</ItemType>
+      <ProjectName />
+      <CreatedDate>2017-08-14T14:49:06.7927756+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT2M58.593444S" EditActiveTime="PT0S">
       <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
       <EditedCount>0</EditedCount>
       <ViewedCount>1</ViewedCount>
       <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\Drift.cpp</Item>
       <ItemType>ProjectItem</ItemType>
       <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
-      <CreatedDate>2017-08-14T11:59:51.1041374+01:00</CreatedDate>
+      <CreatedDate>2017-08-14T14:40:31.1810434+01:00</CreatedDate>
       <ViewedBy>Mushfaque</ViewedBy>
     </DevTrackerDataItem>
   </LastSessionTimeList>
   <TotalTimeList>
-    <DevTrackerDataItem ViewActiveTime="PT1H13M30.7656139S" EditActiveTime="PT1H22M25.9615217S">
+    <DevTrackerDataItem ViewActiveTime="PT1H15M3.1760329S" EditActiveTime="PT1H22M25.9615217S">
       <ModifiedDate>2017-08-12T18:33:43.4094512+01:00</ModifiedDate>
       <ModifiedBy>Mushfaque</ModifiedBy>
       <EditedCount>1</EditedCount>
-      <ViewedCount>1</ViewedCount>
+      <ViewedCount>2</ViewedCount>
       <Item>Debug Mode</Item>
       <ItemType>DebugModeItem</ItemType>
       <ProjectName />
       <CreatedDate>2017-08-12T11:41:16.1655666+01:00</CreatedDate>
       <ViewedBy>Mushfaque</ViewedBy>
     </DevTrackerDataItem>
-    <DevTrackerDataItem ViewActiveTime="PT30M6.4597995S" EditActiveTime="PT7M27.4349541S">
+    <DevTrackerDataItem ViewActiveTime="PT33M5.0502438S" EditActiveTime="PT7M27.4349541S">
       <ModifiedDate>2017-08-12T18:49:17.5372637+01:00</ModifiedDate>
       <ModifiedBy>Mushfaque</ModifiedBy>
       <EditedCount>1</EditedCount>
-      <ViewedCount>2</ViewedCount>
+      <ViewedCount>3</ViewedCount>
       <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\Drift.cpp</Item>
       <ItemType>ProjectItem</ItemType>
       <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
@@ -106,6 +116,26 @@
     </DevTrackerDataItem>
   </TotalTimeList>
   <HistoryTimeList>
+    <DevTrackerDataItem ViewActiveTime="PT1M32.410419S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>Debug Mode</Item>
+      <ItemType>DebugModeItem</ItemType>
+      <ProjectName />
+      <CreatedDate>2017-08-14T14:49:06.7927756+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT2M58.5904443S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\Drift.cpp</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-14T14:40:31.1810434+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
     <DevTrackerDataItem ViewActiveTime="PT5.8972041S" EditActiveTime="PT0S">
       <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
       <EditedCount>0</EditedCount>

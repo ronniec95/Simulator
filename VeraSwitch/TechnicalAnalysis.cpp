@@ -76,11 +76,12 @@ auto AARC::TA::smooth_outliers(const TSData &in, const float tolerance) -> const
     if (in.ts_.empty() || tolerance == 0.0f) return in;
     const auto &pos = rand() % (in.ts_.size() - 10) + 10;
     const auto &avg = [ sum = 0.0f, &in, &pos ]() mutable {
+        if ((pos + 10) > in.close_.size()) return 0.0f;
         for (auto i = pos; i < pos + 10; i++) { sum += (in.close_[i] - in.close_[i - 1]); }
         return sum / 10.0f;
     }
     ();
-
+    if (avg == 0.0f) return in;
     auto &&open = async(launch::async, [&in, &tolerance, &avg]() {
         const auto &sz   = in.open_.size();
         const auto  vout = make_unique<float[]>(sz);
@@ -168,10 +169,10 @@ auto AARC::TA::rsi(const std::vector<float> &in, const size_t period) -> std::ve
     ispc::rs_sum(in.data(), rs_up.get(), in.size(), period, true);
     auto rs_down = make_unique<float[]>(sz);
     ispc::rs_sum(in.data(), rs_down.get(), in.size(), period, false);
-    auto        ema_up = make_unique<float[]>(sz - period - 1);
-    auto        ema_down = make_unique<float[]>(sz - period - 1);
-    ispc::ema(rs_up.get(), static_cast<float*>(ema_up.get()), sz, period);
-    ispc::ema(rs_down.get(), static_cast<float*>(ema_down.get()), sz, period);
+    auto ema_up   = make_unique<float[]>(sz - period - 1);
+    auto ema_down = make_unique<float[]>(sz - period - 1);
+    ispc::ema(rs_up.get(), static_cast<float *>(ema_up.get()), sz, period);
+    ispc::ema(rs_down.get(), static_cast<float *>(ema_down.get()), sz, period);
 
     auto rsi_array = make_unique<float[]>(sz - period - 1);
     ispc::rsi(ema_up.get(), ema_down.get(), rsi_array.get(), sz - period - 1);
@@ -193,12 +194,10 @@ auto AARC::TA::sma(const std::vector<float> &in, const size_t period) -> std::ve
         std::partial_sum(begin(in), end(in), begin(sum));
         return sum;
     }();
-    const auto &sma = accumulate(begin(p_sum), end(p_sum), vector<float>(),
-                                 [&p_sum, &period, i = 0 ](auto &&acc, auto &&val) mutable {
-                                     acc.emplace_back(p_sum[i + period] - val / static_cast<float>(period));
-                                     ++i;
-                                     return acc;
-                                 });
+    auto sma = vector<float>();
+    for (auto i = size_t(0); i < in.size() - period; ++i) {
+        sma.emplace_back((in[i] - p_sum[i + period]) / static_cast<float>(period));
+    }
     return sma;
 }
 
@@ -290,4 +289,7 @@ TEST_CASE("Technical analysis") {
     CHECK(!macd.empty());
     const auto scale = AARC::TA::scale(input.close_);
     CHECK(!scale.empty());
+    const auto sma = AARC::TA::sma(input.close_, 10);
+    CHECK(!sma.empty());
+
 }

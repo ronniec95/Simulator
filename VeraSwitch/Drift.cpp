@@ -21,7 +21,7 @@ auto AARC::Drift::pr_rsi_short(const TSData &in, const std::vector<float> &rsi,
         for (auto &&i = size_t(0); i < max_idx;) {
             if (rsi[i] > upper_threshold) {
                 res.emplace_back(i + rsi_pr_offset);
-                while (rsi[i] > upper_threshold) ++i;
+                while (i < max_idx && rsi[i] > upper_threshold) ++i;
             }
             ++i;
         }
@@ -36,12 +36,55 @@ auto AARC::Drift::pr_rsi_short(const TSData &in, const std::vector<float> &rsi,
 
     // Minmax
     const auto &mm_it = minmax_element(begin(signal_returns), end(signal_returns));
+    if (mm_it.first == signal_returns.end() || mm_it.second == signal_returns.end()) return vector<size_t>();
     return AARC::TA::histogram(signal_returns, (*mm_it.second - *mm_it.first) / 15.0f);
 }
 
+/* When RSI > upper_threshold, find the return after N periods, bucket into 20 buckets */
+auto AARC::Drift::pr_rsi_long(const TSData &in, const std::vector<float> &rsi, const std::vector<float> &period_returns,
+                              const float lower_threshold) -> std::vector<size_t> {
+    MethodLogger mlog("Drift::pr_rsi_long");
+
+    using namespace std;
+    const auto &max_idx       = rsi.size() - (in.ts_.size() - period_returns.size());
+    const auto &rsi_pr_offset = period_returns.size() - rsi.size();
+
+    // Find positions of RSI where they go above upper_threshold
+    const auto &rsi_lower_positions = [&rsi, &max_idx, &rsi_pr_offset, &lower_threshold, &in]() {
+        vector<size_t> res;
+        for (auto &&i = size_t(0); i < max_idx;) {
+            if (rsi[i] < lower_threshold) {
+                res.emplace_back(i + rsi_pr_offset);
+                while (i < max_idx && rsi[i] < lower_threshold) ++i;
+            }
+            ++i;
+        }
+        return res;
+    }();
+
+    const auto &signal_returns = [&rsi_lower_positions, &period_returns, &mlog]() {
+        vector<float> signal_returns;
+        for (auto &&pos : rsi_lower_positions) { signal_returns.emplace_back(period_returns[pos]); }
+        return signal_returns;
+    }();
+
+    // Minmax
+    const auto &mm_it = minmax_element(begin(signal_returns), end(signal_returns));
+    if (mm_it.first == signal_returns.end() || mm_it.second == signal_returns.end()) return vector<size_t>();
+    return AARC::TA::histogram(signal_returns, (*mm_it.second - *mm_it.first) / 15.0f);
+}
+
+auto print_debug(const std::vector<float> &rsi, const AARC::TSData &smooth, const std::vector<float> &pr) {
+    printf("RSI:\n");
+    for_each(begin(rsi), end(rsi), [](auto &&val) { printf("%f\n", val); });
+    printf("Smooth:\n");
+    for_each(begin(smooth.close_), end(smooth.close_), [](auto &&val) { printf("%f\n", val); });
+    printf("PR:\n");
+    for_each(begin(pr), end(pr), [](auto &&val) { printf("%f\n", val); });
+}
 void find_optimal(const AARC::TSData &in) {
     using namespace std;
-    for (auto &&sample : {60, 120, 240}) {
+    for (auto &&sample : {60, 120, 240, 24 * 60}) {
         const auto &resample = AARC::TA::resample(in, sample);
         CHECK(!resample.ts_.empty());
         const auto &smooth = AARC::TA::smooth_outliers(resample, 0.03f);
@@ -49,12 +92,13 @@ void find_optimal(const AARC::TSData &in) {
         for (auto &&rsi_lookback : {3, 4, 5, 10, 15}) {
             const auto &rsi            = AARC::TA::rsi(smooth.close_, rsi_lookback);
             const auto &period_returns = AARC::TA::period_returns(smooth, 3, AARC::TA::PeriodReturnType::CLOSELOW);
-            const auto &probability    = AARC::Drift::pr_rsi_short(smooth, rsi, period_returns, 80.0);
+
+            // print_debug(rsi, smooth, period_returns);
+            const auto &probability = AARC::Drift::pr_rsi_short(smooth, rsi, period_returns, 90.0);
 
             for_each(begin(probability), end(probability), [](auto &&val) { printf("%zd,", val); });
             printf("\n");
             if (!probability.empty()) {
-
                 // split and sum cdf
                 const auto &prob = [&probability]() -> std::pair<size_t, size_t> {
                     const auto &mid_point = probability.size() / 2;
