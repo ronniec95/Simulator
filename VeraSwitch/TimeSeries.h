@@ -12,9 +12,9 @@ namespace AARC {
 
     struct TSData {
         TSData() = default;
-        TSData(const vector<size_t> &ts, const vector<float> &open, const vector<float> &high, const vector<float> &low,
-               const vector<float> &close)
-            : ts_(ts), open_(open), high_(high), low_(low), close_(close) {}
+        TSData(const uint64_t asset, const vector<size_t> &ts, const vector<float> &open, const vector<float> &high,
+               const vector<float> &low, const vector<float> &close)
+            : asset_(asset), ts_(ts), open_(open), high_(high), low_(low), close_(close) {}
         uint64_t       asset_ = 0;
         vector<size_t> ts_;
         vector<float>  open_;
@@ -37,6 +37,13 @@ namespace AARC {
             low_.reserve(sz);
             close_.reserve(sz);
         }
+    };
+
+    struct TAIndicator {
+        int                 asset_id_ = 0;
+        int                 period_   = 1;
+        std::vector<size_t> ts_;
+        std::vector<float>  values_;
     };
 
     class TimeSeriesMgr {

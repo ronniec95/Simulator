@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-16"?>
+<DevTrackerData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" SolutionTotalEditTime="PT1H5M21.4636662S" SolutionTotalViewTime="PT1H34M49.7208296S" SolutionTotalDebugTime="PT1H13M30.7656139S">
+  <FileVersion>
+    <Major>1</Major>
+    <Minor>0</Minor>
+  </FileVersion>
+  <SessionTimeList />
+  <LastSessionTimeList>
+    <DevTrackerDataItem ViewActiveTime="PT5.8972041S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\Drift.cpp</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-14T11:59:51.1041374+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+  </LastSessionTimeList>
+  <TotalTimeList>
+    <DevTrackerDataItem ViewActiveTime="PT1H13M30.7656139S" EditActiveTime="PT1H22M25.9615217S">
+      <ModifiedDate>2017-08-12T18:33:43.4094512+01:00</ModifiedDate>
+      <ModifiedBy>Mushfaque</ModifiedBy>
+      <EditedCount>1</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>Debug Mode</Item>
+      <ItemType>DebugModeItem</ItemType>
+      <ProjectName />
+      <CreatedDate>2017-08-12T11:41:16.1655666+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT30M6.4597995S" EditActiveTime="PT7M27.4349541S">
+      <ModifiedDate>2017-08-12T18:49:17.5372637+01:00</ModifiedDate>
+      <ModifiedBy>Mushfaque</ModifiedBy>
+      <EditedCount>1</EditedCount>
+      <ViewedCount>2</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\Drift.cpp</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-12T11:19:44.7933341+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT1M3.4296667S" EditActiveTime="PT41.9383726S">
+      <ModifiedDate>2017-08-12T11:38:10.9679175+01:00</ModifiedDate>
+      <ModifiedBy>Mushfaque</ModifiedBy>
+      <EditedCount>1</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\Drift.h</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-12T11:33:17.0257613+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT3.3043755S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\Split.h</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-12T17:29:41.4667937+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT40M43.799928S" EditActiveTime="PT34M37.5153498S">
+      <ModifiedDate>2017-08-12T17:39:52.4108716+01:00</ModifiedDate>
+      <ModifiedBy>Mushfaque</ModifiedBy>
+      <EditedCount>1</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\Split.ispc</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-12T11:26:43.9742964+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT21M55.7666354S" EditActiveTime="PT21M48.3594967S">
+      <ModifiedDate>2017-08-12T17:29:03.4932627+01:00</ModifiedDate>
+      <ModifiedBy>Mushfaque</ModifiedBy>
+      <EditedCount>1</EditedCount>
+      <ViewedCount>2</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\TechnicalAnalysis.cpp</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-12T11:16:34.5848593+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT49.928296S" EditActiveTime="PT46.215493S">
+      <ModifiedDate>2017-08-12T11:25:59.230801+01:00</ModifiedDate>
+      <ModifiedBy>Mushfaque</ModifiedBy>
+      <EditedCount>1</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\TechnicalAnalysis.h</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-12T11:19:41.2529189+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT7.0321285S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\TimeSeries.cpp</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-12T11:29:47.0199034+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+  </TotalTimeList>
+  <HistoryTimeList>
+    <DevTrackerDataItem ViewActiveTime="PT5.8972041S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\Drift.cpp</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-14T11:59:51.1041374+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT3.3043755S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\Split.h</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-12T17:29:41.4667937+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT1H13M30.7656139S" EditActiveTime="PT1H22M25.9615217S">
+      <ModifiedDate>2017-08-12T18:33:43.4094512+01:00</ModifiedDate>
+      <ModifiedBy>Mushfaque</ModifiedBy>
+      <EditedCount>1</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>Debug Mode</Item>
+      <ItemType>DebugModeItem</ItemType>
+      <ProjectName />
+      <CreatedDate>2017-08-12T11:41:16.1655666+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT1M3.4296667S" EditActiveTime="PT41.9383726S">
+      <ModifiedDate>2017-08-12T11:38:10.9679175+01:00</ModifiedDate>
+      <ModifiedBy>Mushfaque</ModifiedBy>
+      <EditedCount>1</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\Drift.h</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-12T11:33:17.0257613+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT7.0321285S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\TimeSeries.cpp</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-12T11:29:47.0199034+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT40M43.799928S" EditActiveTime="PT34M37.5153498S">
+      <ModifiedDate>2017-08-12T17:39:52.4108716+01:00</ModifiedDate>
+      <ModifiedBy>Mushfaque</ModifiedBy>
+      <EditedCount>1</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\Split.ispc</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-12T11:26:43.9742964+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT30M0.5635952S" EditActiveTime="PT7M27.4349541S">
+      <ModifiedDate>2017-08-12T18:49:17.5372637+01:00</ModifiedDate>
+      <ModifiedBy>Mushfaque</ModifiedBy>
+      <EditedCount>1</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\Drift.cpp</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-12T11:19:44.7933341+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT49.928296S" EditActiveTime="PT46.215493S">
+      <ModifiedDate>2017-08-12T11:25:59.230801+01:00</ModifiedDate>
+      <ModifiedBy>Mushfaque</ModifiedBy>
+      <EditedCount>1</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\TechnicalAnalysis.h</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-12T11:19:41.2529189+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT19M56.7951754S" EditActiveTime="PT21M48.3594967S">
+      <ModifiedDate>2017-08-12T17:29:03.4932627+01:00</ModifiedDate>
+      <ModifiedBy>Mushfaque</ModifiedBy>
+      <EditedCount>1</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\TechnicalAnalysis.cpp</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-12T11:19:37.1578591+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT1M58.97146S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\TechnicalAnalysis.cpp</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>H:\Users\Mushfaque.Cradle\Documents\Visual Studio 2015\Projects\VeraSwitch\VeraSwitch\VeraSwitch.vcxproj</ProjectName>
+      <CreatedDate>2017-08-12T11:16:34.5848593+01:00</CreatedDate>
+      <ViewedBy>Mushfaque</ViewedBy>
+    </DevTrackerDataItem>
+  </HistoryTimeList>
+</DevTrackerData>

@@ -34,9 +34,16 @@ namespace ispc { /* namespace */
 #if defined(__cplusplus) && (! defined(__ISPC_NO_EXTERN_C) || !__ISPC_NO_EXTERN_C )
 extern "C" {
 #endif // __cplusplus
-    extern void ema(const float * vin, float * vout, const int32_t count, const float period);
+    extern void ema(const float * vin, float * vout, const int64_t count, const float period);
     extern void find_char(const uint8_t * arr, const int64_t start, const int64_t end, const int8_t delim, int32_t &pos);
-    extern void rsi_summary(float * vinout, const int32_t count);
+    extern void macd_sub(const float * vin, float * vout, const int64_t count, const float period, const float period2);
+    extern int32_t naive_atoi(const uint8_t * buf, const int32_t sz);
+    extern void period_return(const float * vin, const float * vin2, float * vout, const int64_t min_idx, const int64_t max_idx, const int64_t look_ahead_period);
+    extern void rs_sum(const float * vin, float * vout, const int64_t count, const int64_t period, const bool up);
+    extern void rsi(const float * rs_up, const float * rs_down, float * vout, const int64_t count);
+    extern void rsi_summary(float * vinout, const int64_t count);
+    extern void scale(const float * vin, float * vout, const int64_t count, const float scaling);
+    extern void smooth_outliers(const float * vin, float * vout, const int64_t count, const float tolerance, const float avg);
 #if defined(__cplusplus) && (! defined(__ISPC_NO_EXTERN_C) || !__ISPC_NO_EXTERN_C )
 } /* end extern C */
 #endif // __cplusplus

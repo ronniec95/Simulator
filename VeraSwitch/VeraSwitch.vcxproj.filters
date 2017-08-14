@@ -47,6 +47,10 @@
       <Filter>IO</Filter>
     </ClCompile>
     <ClCompile Include="TechnicalAnalysis.cpp" />
+    <ClCompile Include="RSIFactory.cpp">
+      <Filter>IO</Filter>
+    </ClCompile>
+    <ClCompile Include="Drift.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\CPP\include\linmath.h">
@@ -85,8 +89,15 @@
     <ClInclude Include="Split.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RSIDBFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Drift.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Split.ispc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Todo.txt" />
   </ItemGroup>
 </Project>

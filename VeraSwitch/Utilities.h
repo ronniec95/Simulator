@@ -57,7 +57,9 @@ inline auto split_iter(const std::string &s, char delim)
 // Only used in tracing mode to figure out our call stack
 class MethodLogger {
   public:
-    MethodLogger(const std::string &method) : method_(method) { SPDLOG_TRACE(logger_, "Entering[{}]", method_); }
+    MethodLogger(const std::string method) : method_(std::move(method)) {
+        SPDLOG_TRACE(logger_, "Entering[{}]", method_);
+    }
     ~MethodLogger() { SPDLOG_TRACE(logger_, "Exiting[{}]", method_); }
     auto logger() const { return logger_; }
 
@@ -65,5 +67,3 @@ class MethodLogger {
     const std::string               method_;
     std::shared_ptr<spdlog::logger> logger_ = spdlog::get("logger");
 };
-
-// 4,4,5,5,9,9,9,9,5,6,6,6

@@ -1,5 +1,5 @@
-#include "TimeSeriesFactory.h"
 #include "AARCDateTime.h"
+#include "RSIDBFactory.h"
 #include "Registry.h"
 #include "Utilities.h"
 #include <doctest\doctest.h>
@@ -8,8 +8,9 @@
 namespace spp = sqlite3pp;
 using namespace std::literals::string_literals;
 
-auto AARC::TimeSeriesFactory::create(const std::string &db_path, const AARC::TSData &data, const int units) -> void {
-    MethodLogger mlog("TimeSeriesFactory::create");
+#if 0
+auto AARC::RSIDBFactory::create(const std::string &db_path, const AARC::TSData &data, const int units) -> void {
+    MethodLogger mlog("RSIDBFactory::create");
     if (db_path.empty()) {
         mlog.logger()->error("SQLite path not set while trying to load asset");
         return;
@@ -36,9 +37,9 @@ auto AARC::TimeSeriesFactory::create(const std::string &db_path, const AARC::TSD
     tx.commit();
 }
 
-auto AARC::TimeSeriesFactory::remove(const std::string &db_path, const uint64_t asset_id, const uint64_t start,
-                                     const uint64_t end, const int units) -> void {
-    MethodLogger mlog("TimeSeriesFactory::create");
+auto AARC::RSIDBFactory::remove(const std::string &db_path, const uint64_t asset_id, const uint64_t start,
+                                const uint64_t end, const int units) -> void {
+    MethodLogger mlog("RSIDBFactory::create");
     if (db_path.empty()) {
         mlog.logger()->error("SQLite path not set while trying to load asset");
         return;
@@ -59,9 +60,9 @@ auto AARC::TimeSeriesFactory::remove(const std::string &db_path, const uint64_t 
     tx.commit();
 }
 
-auto AARC::TimeSeriesFactory::select(const std::string &db_path, const uint64_t asset_id, const uint64_t start,
-                                     const uint64_t end, const int units) -> std::unique_ptr<TSData> {
-    MethodLogger mlog("TimeSeriesFactory::select");
+auto AARC::RSIDBFactory::select(const std::string &db_path, const uint64_t asset_id, const uint64_t start,
+                                const uint64_t end, const int units) -> std::unique_ptr<TSData> {
+    MethodLogger mlog("RSIDBFactory::select");
     if (db_path.empty()) {
         mlog.logger()->error("SQLite path not set while trying to load timeseries");
         return std::make_unique<TSData>();
@@ -111,26 +112,27 @@ TEST_SUITE("TimeseriesFactory") {
             data.close_.emplace_back(static_cast<float>(std::rand() % 100 + 1));
         }
         // Save
-        AARC::TimeSeriesFactory::create(db, data, 1);
+        AARC::RSIDBFactory::create(db, data, 1);
 
         // Retrieve
         SUBCASE("Retrieve all for asset") {
-            const auto tsdata = AARC::TimeSeriesFactory::select(db, asset->id_, data.ts_.front(), data.ts_.back(), 1);
+            const auto tsdata = AARC::RSIDBFactory::select(db, asset->id_, data.ts_.front(), data.ts_.back(), 1);
             CHECK(tsdata->asset_ == asset->id_);
             CHECK(tsdata->ts_.size() == 10);
         }
         SUBCASE("Retrieve between 2 timestamps") {
             const auto tsdata =
-                AARC::TimeSeriesFactory::select(db, asset->id_, data.ts_.front() + 1, data.ts_.back() - 1, 1);
+                AARC::RSIDBFactory::select(db, asset->id_, data.ts_.front() + 1, data.ts_.back() - 1, 1);
             CHECK(tsdata->asset_ == asset->id_);
             CHECK(tsdata->ts_.size() == 8);
         }
 
         // Delete
-        AARC::TimeSeriesFactory::remove(db, asset->id_, data.ts_.front(), data.ts_.back(), 1);
-        const auto tsdata = AARC::TimeSeriesFactory::select(db, asset->id_, data.ts_.front(), data.ts_.back(), 1);
+        AARC::RSIDBFactory::remove(db, asset->id_, data.ts_.front(), data.ts_.back(), 1);
+        const auto tsdata = AARC::RSIDBFactory::select(db, asset->id_, data.ts_.front(), data.ts_.back(), 1);
         CHECK(tsdata->asset_ == asset->id_);
         CHECK(tsdata->ts_.size() == 0);
         AARC::AssetFactory::remove(db, std::vector<int64_t>{asset->id_});
     }
 }
+#endif

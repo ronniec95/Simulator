@@ -107,7 +107,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;_TEST</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)/include;H:\Users\Mushfaque.Cradle\Documents\CPP\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FloatingPointModel>Precise</FloatingPointModel>
       <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
@@ -144,7 +144,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_TEST;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)/include;H:\Users\Mushfaque.Cradle\Documents\CPP\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <FloatingPointModel>Precise</FloatingPointModel>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
@@ -166,8 +166,10 @@
     <ClCompile Include="deps\D3DImgui.cpp" />
     <ClCompile Include="deps\imgui_impl_dx11.cpp" />
     <ClCompile Include="AARCDateTime.cpp" />
+    <ClCompile Include="Drift.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="RSIFactory.cpp" />
     <ClCompile Include="TechnicalAnalysis.cpp" />
     <ClCompile Include="TimeSeries.cpp" />
     <ClCompile Include="TimeSeriesCSVFactory.cpp" />
@@ -180,8 +182,10 @@
     <ClInclude Include="include\D3DImgui.h" />
     <ClInclude Include="include\imgui_impl_dx11.h" />
     <ClInclude Include="include\spdlog\tweakme.h" />
+    <ClInclude Include="Drift.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="Registry.h" />
+    <ClInclude Include="RSIDBFactory.h" />
     <ClInclude Include="Split.h" />
     <ClInclude Include="TechnicalAnalysis.h" />
     <ClInclude Include="TimeSeries.h" />
@@ -209,6 +213,9 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename).obj</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename).obj</Outputs>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Todo.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -5,6 +5,7 @@
 #define STB_DEFINE
 #include "AssetFactory.h"
 #include "Registry.h"
+#include "TechnicalAnalysis.h"
 #include "TimeSeriesCSVFactory.h"
 #include "TimeSeriesFactory.h"
 #include "Utilities.h"
@@ -60,22 +61,33 @@ namespace {
     const auto reg_sqlite_location = "AARCSim\\Database";
     const auto reg_sqlite_key      = "SQLiteLocation";
 
+    auto resample_and_save(const AARC::TSData &tsdata) {}
+
     auto save_files(const std::vector<std::string> &filenames, const std::string &asset) -> void {
         const auto db = AARC::Registry::read_string(reg_sqlite_location, reg_sqlite_key);
-        std::for_each(begin(filenames), end(filenames), [ db = db, asset = asset ](const auto &filename) {
-            concurrency::create_task([&db, &asset, &filename]() {
-                auto asset_id = std::async(
-                    std::launch::async, [&db, &asset]() { return AARC::AssetFactory::select_by_name(db, asset)->id_; });
-                auto tsdata = std::async(std::launch::async,
-                                         [&filename]() { return AARC::TimeSeries_CSV::read_csv_file(filename); });
-                return tsdata.get();
-            })
-                .then([db = db](const AARC::TSData &tsdata) {
-                    // Create 5m,10m,30m,1hr
-                    AARC::TimeSeriesFactory::remove(db, tsdata.asset_, tsdata.ts_.front(), tsdata.ts_.back());
-                    AARC::TimeSeriesFactory::create(db, tsdata);
-                    return true;
+        std::for_each(begin(filenames), end(filenames), [&asset, &db](const auto &filename) {
+            concurrency::create_task([=]() {
+                // Load up the asset id
+                auto asset_id = std::async(std::launch::async, [ path = db, asset_name = asset ]() {
+                    return AARC::AssetFactory::select_by_name(path, asset_name)->id_;
                 });
+                // Load the actual csv files
+                auto tsdata_fut = std::async(
+                    std::launch::async, [fname = filename]() { return AARC::TimeSeries_CSV::read_csv_file(fname); });
+                //// Join point
+                //// Save the data in the database,
+                auto tsdata   = tsdata_fut.get();
+                tsdata.asset_ = asset_id.get();
+                for (const auto time_unit : {1, 5, 30, 60, 60 * 24}) {
+                    AARC::TimeSeriesFactory::remove(db, tsdata.asset_, tsdata.ts_.front(), tsdata.ts_.back(),
+                                                    time_unit);
+                }
+                AARC::TimeSeriesFactory::create(db, tsdata, 1);
+                for (const auto time_unit : {5, 30, 60, 60 * 24}) {
+                    const auto resampled = AARC::TA::resample(tsdata, time_unit);
+                    AARC::TimeSeriesFactory::create(db, resampled, time_unit);
+                }
+            });
         });
     }
 } // namespace
@@ -206,4 +218,10 @@ void AARC::TimeSeriesMgr::run(bool &show) {
         ImGui::End();
     } else {
     }
+}
+
+TEST_CASE("Save resampled timeseries") {
+    static auto const filename =
+        "H:\\Users\\Mushfaque.Cradle\\Downloads\\HISTDATA_COM_ASCII_EURUSD_M1201703\\data2.csv";
+    save_files({filename}, "EURUSD");
 }

@@ -13,7 +13,7 @@ namespace AARC {
             std::string timeseries_format;
         };
 
-        auto read_csv_file(const std::string &filename) -> AARC::TSData;
+        auto read_csv_file(const std::string filename) -> AARC::TSData;
         auto read_csv_partial_file(const std::string &filename) -> AARC::TSData;
     } // namespace TimeSeries_CSV
 } // namespace AARC

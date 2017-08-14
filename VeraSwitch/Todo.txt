@@ -1,0 +1,264 @@
+// 29/7
+// MACD fix
+// Scaling done
+// Probability distribution corresponding to +80/-20 for rsi
+// Changing period of RSI until we get max results
+// 
+// MACD
+// Stoch
+// sma
+// Triangle
+// Speed up file loading (atof)
+// Split line
+// View timeseries - scroll and zoom
+// View all TA on timeseries and zoom and scroll
+// Probability view of direction on rsi/macd/stoch/sma.
+// Try with different periods and see what the results are - maximise
+// As you change slider, show % win rate
+// Dlib - start looking at machine learning
+// 
+// Find cheap and expensive options with drift
+// vega/gamma/theta with sliders, real time optimisation
+// Binary tree in vector,dfs,bfs,preorder,postorder,leaves
+// 
+// Treap
+// Prefix sum
+// MST parallel
+// reference to data in a unique_ptr structure to avoid copies
+// 3d cube
+// Surface
+// Rotating surface
+// Particle effect
+// Halo
+// Rotating surface with tall points showing interesting options
+
+Hi, I'm Ronnie Chowdhury and welcome back to my option pricing and portfolio simulation project in c++. I've given myself a target of 90
+days to build this application which will cover topics such as machine learning, 3d graphics and of course a lot of high performance C++14.
+I'm going to try to release a video every couple of days, initially focusing on styles and techniques for writing performant code in c++14, and then once
+the baseline has been set, I'll focus on the problem at hand.
+Last time we went over initialisation of variables and how to do it in a functional style with c++14.
+
+Today I'm looking at another optimisation, that of move semantics. A lot of people seem to have trouble understanding the semantics and how to write 
+code to take advantage of them. Well in most cases there is a fairly logical way to look at them.
+
+Let's start with the simplest example, the rule of 0:
+struct Foo {
+
+}; 
+Yes, as simple as this. It's a fully move compatible struct.(public by default).
+In this foo function, it will be passed by value and moved into y. It's the most efficient way of doing this if you have to change something in x.
+In this bar case we have have a pass by reference and then a copy which is probably not what you want
+So in most cases you're probably just needing to read some data from x so a reference is more than enough.
+
+struct Example1 {
+    Example1()                 = default;
+    Example1(const Example1 &) = default;
+    Example1(Example1 &&)      = default;
+    Example1 &operator=(const Example1 &) = default;
+    Example1 &operator=(Example1 &&) = default;
+
+    Example1(const std::string str) : str_(std::move(str)) {}
+
+    void set_str(const std::string s) { str_ = std::move(s); }
+
+    std::string str_;
+};
+
+    std::string x = "foo";
+    Example1    ex1(x);
+    printf("%s\n", ex1.str_.c_str());
+    ex1.set_str("bar");
+
+If you rememeber c++03 it has a rule of three and people used to define the constructor, destructor, copy and operator=.
+But note that if you define even one of these special methods, then none of the others get created.
+And 99% of the time you should not need to write any of these default constructors. If you are, you are telling the compiler that 
+something weird is happening with the way I handle moves and copies and that will likely lead to bugs. 
+If you are using well written data types then you should not need to write any constructors.
+
+rule of 5 example here
+
+If you do have to override one, then at least use the following syntax
+
+ = default
+
+A simple way to understand move construction, which I use as a rule of thumb, is to ask, do I need to take a copy of a value for my own use.
+If I do then a pass by value and move is the right solution. So when this method is called
+
+set_foo(const string&s) { s_ = s; /* operator= */ } 
+
+
+x.set_foo("my str") /* my str constructed, then operator= called */
+
+auto s = "my str";/* my str constructed,*/
+x.set_foo(s) /* copy a pointer by value,  then operator= called */
+
+converting this to a move
+set_foo(const string s/* by value*/) { s_ = std::move(s); /* move */ } 
+
+x.set_foo("my str") /* my str constructed in place into s_, so move used */
+auto s = "my str";/* my str constructed,*/
+x.set_foo(s) /* then moved into s_  */
+
+We are reducing the number of operations hence optimising the code.
+
+Recall this isn't the same as rvo which can be done by the compiler and is optional in 14 but compulsory in 17
+
+Another rule of thumb I use is
+
+struct Bar{};
+
+struct Foo {
+    Bar x; 
+}
+
+Foo f;
+f.x = Bar(); // Copy constructor will be used in a member variable that is not initialiased at construction
+
+struct Foo {
+    Foo(Bar x) : x_(std::move(x)) {}
+    const Bar x_;  
+}
+
+Here x_ is initialised with a move, so pass by value and move in place; saving an operation. Of course the 
+compiler will do as much as it can to optimise but give it enough hints.
+
+*****
+
+Testing code, vtables, and encapsulation
+
+Classes come with advantages such as encapsulation and polymorphism, but also disadvantages such as encapsulation, polymorphism, and performance. Beyond
+the typical interview answer of vtables impacting virtual functions, there are some subtle points to consider that can be addressed in c++14. I'ma
+fan of clear testable code and I take a leaf from functional languages where functions are self contained and easy to test.
+C++ being multiparadigm and STL really reinforcing the functional aspects is a good direction to go in.
+
+Pure functions are those that can be called multiple times with the same result, that is to say their state is captured within their inputs and there's no side effects.
+Classes contain state so the execution of one function may alter the state for a subsequent call. Concurrency, a major focus of this series, becomes 
+more complex if there is state.
+
+Let's do a simple CSVReader class and then explore it's shortcomings and how to get around it.
+
+In the C language you pass state through variables into the function. We can do this in a C++14 way.
+
+struct Foo {
+    constexpr auto do_calculation(const int x, const int y) -> int { return x+y; }
+};
+
+Does this really need to be in a class? If you look at the generated code, we have a vtable for Foo with a function pointer like this
+
+constexpr int (*do_calculation)(Foo* this /* what's this doing here? */, const int,const int);
+
+when this is called, the compiler will likely do
+push rbx,0x08080676; this pointer
+push rcx,x; 
+push rdx,y;
+
+If the code is simple the compiler will do appropriate register allocation and the this pointer allocation won't happen. But having looked at
+any real world code it's doesn't seem to do as well as I thought, especially when there are conditions and multiple return statements.
+
+Better to do this
+
+namespace Foo {
+    constexpr auto do_calculation(const int x, const int y) -> int { return x+y; }
+}
+Now we are sure that there is no extra register allocation. And that do_calculation is *likely* (emph) only dependent on it's inputs.
+More registers for other optimisations.
+
+Private methods?:
+----------------
+Put them in an anonymous namespace local to the cpp file.
+
+All of this together means I can write simpler unit tests where I can test the state of the function without depending
+on the state of the class. That's again the ability to reason about the code at first sight rather than having to figure
+out that method x changes y if such and such happen
+
+It helps the LTCG too as it's easier for the linker to know whats used and where.
+
+Functions, because they are pure mean they are *likely* stateless so they could be run simultaneously.
+And if not the dependencies are at least explicit so you known about them
+
+I want to get to here
+
+<Show + quad which demonstrates the different types of shared values and value of const.>
+
+As you can see from the diagram, we want to stay in the 3 unmutable areas;; so const is our friend.
+
+---------------------
+
+
+Memory management
+new/delete/shared/unique_ptr
+mutex
+reference
+
+Hi my name's Ronnie Chowdhury, and welcome to my foray in writing a options pricer and portofolio simulator in c++14 in 90 days.
+Pointes - 1 line answer - don't use them in c++14.
+2 answer - don't use them in c++14.
+final answer - only if you are writing your own memory manager or calling a c function that managers memory for you.
+C++14 unlike c# or java shouldn't have memory or resource leaks
+With move constructors and RVO, you shouldn't even need unique or shared pointers most of the time.
+
+----------------
+
+Design patterns
+
+singleton
+factory
+
+struct with functions
+separate out math with const for compiler 
+
+----------------
+
+Initialisation syntax
+auto x = {1,2,3};
+foo({1,2});
+cant have unitialised variables.
+
+
+using storage_t = std::array<int,5>(); as alternative to typedef
+
+
+For loops
+s
+Our next step in writing highly threaded code is to go back to our 3rd video on lambda function initialisation of 
+const variables and extend that to loops
+Again let's think functionally. STL has a whole bunch of algorithms that cover a lot of the types of code that you need.
+The first two we'll go over are for_each, generate_n and accumulate.
+Sticking with the theme of functional programming, if you've coded in haskell or f# or similar you'll most likely Recall
+that fold is the go to array processing command. And there is an equivalent, accumulate.
+
+Why not for_each? Because again think state, you want to minimise that.  Map/Reduce is probably something you are familiar with
+and normally you are producing a new output from old which is a accumulate(reduce) or transform(map).
+
+If you can , in place transforms are even better for reduced memory allocation. We will talk about memory allocation a lot
+later on as that is really important in any kind of development.
+
+generate_n, copy_n
+
+using float instead of double
+
+
+
+Pointer to soething is going to be a lot slower, we have to traverse to main memory anytime there is a new, 
+
+--------------------------
+
+Adjacency Matrix
+    Eulerian walk
+        All vertices must have even degrees
+        Except start/end which can be odd (if start == end then even is ok)
+    Remove loops and keep min(edge) between two vertices
+    number of odd degree vertices must be even
+Kruskal search (Bruvka)
+Shortest path
+Dynamic programming
+
+sma
+bayes
+random forests
+linear optimisation (lpsolve)
+
+
+--------------------------
+
+http://poeplanner.com/AAcAANsyGABrm40ILu2DGY4AXtN-JJ1iWn11_rq748SilwYZisM6KjjvekQNyPDuDlb6fyv9bo25ePl-3TB8UUfnVCT9_9431O0_jX0j9k2Sd9cUdaTCGNt08Y9gbyeaapu1hMUkiw-rFr8mlWHiVUuMNonTcFIqC13ybWw2PZ2qbIxirA5IEZYHHpUu8NVJUX_GMFutMxnXoqMPxDt8uMrB84IeFLCaYcJzc3CfiPbnP3POcAmgbOeVIC0fTLNFfg5cavrQH

@@ -4,6 +4,7 @@
 #include "TimeSeries.h"
 #include "Utilities.h"
 #include <algorithm>
+#include <boost/tokenizer.hpp>
 #include <chobo\small_vector.hpp>
 #include <chobo\vector.hpp>
 #include <concurrent_vector.h>
@@ -19,17 +20,8 @@ namespace {
 
     // Only works for positive numbers and really only tested with dates
     auto naive_atoi(const char *buf, const int pos, const int sz) {
-        if (buf == nullptr) return 0;
-        const auto buf_size = strnlen_s(buf, 31);
-        if ((pos + sz) > buf_size) return 0;
-        static int multiplier[] = {0, 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000};
-        int        sum          = 0;
-        for (int i = pos; i < pos + sz; i++) {
-            const auto value = buf[i] - '0';
-            const auto mult  = multiplier[sz - i + pos];
-            sum += value * mult;
-        }
-        return sum;
+        if (buf == nullptr || (pos + sz) > strnlen_s(buf, 16)) return 0;
+        return ispc::naive_atoi(reinterpret_cast<const uint8_t *>(&buf[pos]), sz);
     }
     auto naive_atof(const std::string &buf) {
         if (buf.empty()) return 0.0f;
@@ -60,38 +52,47 @@ namespace {
         tm.tm_mday = -1;
         for (auto i = 0, pos = 0; i < fmt.size() - 1; i++) {
             if (pos > buffer.size()) return false;
-            const char curr = fmt[i];
-            const char next = fmt[i + 1];
-            if (curr == '%') {
+            const auto curr = fmt[i];
+            const auto next = fmt[i + 1];
+            const auto mv   = [&tm, &next, &buffer, &pos]() {
                 switch (next) {
                 case 'Y':
                     tm.tm_year = naive_atoi(buffer.data(), pos, 4) - 1900;
-                    pos += 4;
+                    return 4;
+                    break;
+                case 'y':
+                    tm.tm_year = naive_atoi(buffer.data(), pos, 2) + 1900;
+                    return 2;
                     break;
                 case 'm':
                     tm.tm_mon = naive_atoi(buffer.data(), pos, 2);
-                    pos += 2;
+                    return 2;
                     break;
                 case 'd':
                     tm.tm_mday = naive_atoi(buffer.data(), pos, 2);
-                    pos += 2;
+                    return 2;
                     break;
                 case 'H':
                     tm.tm_hour = naive_atoi(buffer.data(), pos, 2);
-                    pos += 2;
+                    return 2;
                     break;
                 case 'M':
                     tm.tm_min = naive_atoi(buffer.data(), pos, 2);
-                    pos += 2;
+                    return 2;
                     break;
                 case 'S':
                     tm.tm_sec = naive_atoi(buffer.data(), pos, 2);
-                    pos += 2;
+                    return 2;
                     break;
-                case '%': pos++; break;
                 }
+                return 0;
+            }();
+            switch (curr) {
+            case '%':
+                pos += mv;
                 i++;
-            } else {
+                break;
+            default:
                 if (curr != buffer[pos]) return false;
                 pos++;
             }
@@ -104,23 +105,23 @@ namespace {
     // Read line looking for separator chars based on probability of occurrence
     auto find_separator(const std::string &data) noexcept -> const char {
         using namespace std;
-        MethodLogger mlog("find_separator");
-        const auto   separators = array<char, 9>{',', ';', '\t', '|', ':', '~', '-', '+', '#'};
-        const auto   counters =
-            std::accumulate(begin(data), end(data), array<size_t, sizeof(separators)>{0}, [](auto acc, const auto ch) {
-                switch (ch) {
-                case ',': acc[0]++; break;
-                case ';': acc[1]++; break;
-                case '\t': acc[2]++; break;
-                case '|': acc[3]++; break;
-                case ':': acc[4]++; break;
-                case '~': acc[5]++; break;
-                case '-': acc[6]++; break;
-                case '+': acc[7]++; break;
-                case '#': acc[8]++; break;
-                }
-                return acc;
-            });
+        auto &&      mlog       = MethodLogger("find_separator");
+        const auto &&separators = array<char, 9>{',', ';', '\t', '|', ':', '~', '-', '+', '#'};
+        const auto &&counters   = std::accumulate(begin(data), end(data), array<size_t, sizeof(separators)>{0},
+                                                [](auto &&acc, const auto &ch) {
+                                                    switch (ch) {
+                                                    case ',': acc[0]++; break;
+                                                    case ';': acc[1]++; break;
+                                                    case '\t': acc[2]++; break;
+                                                    case '|': acc[3]++; break;
+                                                    case ':': acc[4]++; break;
+                                                    case '~': acc[5]++; break;
+                                                    case '-': acc[6]++; break;
+                                                    case '+': acc[7]++; break;
+                                                    case '#': acc[8]++; break;
+                                                    }
+                                                    return acc;
+                                                });
         // Find the counter with the maximum
         const auto &it = std::max_element(std::begin(counters), std::end(counters));
         return all_of(begin(counters), end(counters), [](auto i) { return i == 0; })
@@ -190,7 +191,7 @@ namespace {
     auto split_f(const std::string &s, char delim) -> std::vector<std::string> {
         std::vector<std::string> result;
         for (auto i = size_t(0); i < s.size();) {
-            int pos = i;
+            auto &&pos = int(i);
             ispc::find_char(reinterpret_cast<const uint8_t *>(s.data()), i, s.size(), delim, pos);
             result.emplace_back(begin(s) + i, begin(s) + pos);
             i = pos + 1;
@@ -205,11 +206,9 @@ namespace {
         using namespace std;
 
         ifstream in(filename);
-        string   line;
-        auto row_num = size_t(0), end_row = num_lines == -1 ? UINTMAX_MAX : size_t(details->header_line + num_lines);
+        auto &&row_num = size_t(0), end_row = num_lines == -1 ? UINTMAX_MAX : size_t(details->header_line + num_lines);
         // Reading the buffer in, in one go and storing in memory is faster than a getline
         // at a cost of memory (a few mb)
-
         auto str = stringstream();
         str << in.rdbuf();                     // 14
         auto lines = split_f(str.str(), '\n'); // 5ms
@@ -221,22 +220,24 @@ namespace {
             float  close_;
         };
         // Parse line in parallel using map/reduce metaphor
-        vector<DataUnit> v;
+        concurrency::concurrent_vector<DataUnit> v;
         v.reserve(lines.size());
-        concurrency::parallel_for_each(begin(lines) + details->header_line + 1, end(lines),
-                                       [&details, &v](const auto &ln) {
-                                           auto fields = chobo::small_vector<string>(16, string());
-                                           split(ln, details->separator, fields.begin()); // 22ms
-                                           std::tm tm = {};
-                                           scnstr(tm, details->timeseries_format, fields[details->ts_column]);
-                                           DataUnit du;
-                                           du.ts_    = AARC::AARCDateTime(tm).minutes;
-                                           du.open_  = naive_atof(fields[details->open_column]);
-                                           du.high_  = naive_atof(fields[details->high_column]);
-                                           du.low_   = naive_atof(fields[details->low_column]);
-                                           du.close_ = naive_atof(fields[details->close_column]);
-                                           v.push_back(du);
-                                       }); // 17
+        concurrency::parallel_for_each(
+            begin(lines) + details->header_line + 1, end(lines), [&details, &v](const auto &ln) {
+                auto &&                                       fields = chobo::small_vector<string, 10>();
+                boost::tokenizer<boost::char_separator<char>> tok(
+                    ln, boost::char_separator<char>(array<char, 2>{details->separator, '\0'}.data())); //
+                for (auto field : tok) { fields.emplace_back(field); }
+                std::tm tm = {};
+                scnstr(tm, details->timeseries_format, fields[details->ts_column]);
+                DataUnit du;
+                du.ts_    = AARC::AARCDateTime(tm).minutes;
+                du.open_  = naive_atof(fields[details->open_column]);
+                du.high_  = naive_atof(fields[details->high_column]);
+                du.low_   = naive_atof(fields[details->low_column]);
+                du.close_ = naive_atof(fields[details->close_column]);
+                v.push_back(du);
+            }); // 14
         // Reduce by sort,combine.
         concurrency::parallel_sort(begin(v), end(v),
                                    [](const auto &lhs, const auto &rhs) { return lhs.ts_ < rhs.ts_; }); // 2
@@ -261,15 +262,15 @@ namespace {
     }
 } // namespace
 
-auto AARC::TimeSeries_CSV::read_csv_file(const std::string &filename) -> AARC::TSData {
+auto AARC::TimeSeries_CSV::read_csv_file(const std::string filename) -> AARC::TSData {
     const auto csv_part = csv_part_load(filename);
     const auto details  = find_details(csv_part);
     return csv_read_line(filename, details, -1);
 }
 
 auto AARC::TimeSeries_CSV::read_csv_partial_file(const std::string &filename) -> AARC::TSData {
-    const auto csv_part = csv_part_load(filename);
-    const auto details  = find_details(csv_part);
+    const auto &&csv_part = csv_part_load(filename);
+    const auto &&details  = find_details(csv_part);
     return csv_read_line(filename, details, 20);
 }
 
@@ -297,6 +298,11 @@ TEST_SUITE("Timeseries parsing") {
         SUBCASE("Find seperator with empty data") {
             const auto separator = find_separator("");
             CHECK(separator == 0);
+        }
+        SUBCASE("Parse date") {
+            std::tm    tm        = {};
+            const auto separator = scnstr(tm, "%Y%m%d %H%M%S", "20170312 230403");
+            CHECK(separator == true);
         }
         SUBCASE("Find header") {
             const std::array<std::string, 15> cols{"open", "high", "low", "fooclosebar", "timestamp"};
@@ -341,6 +347,10 @@ TEST_SUITE("Timeseries parsing") {
         SUBCASE("valid data") {
             const auto val = naive_atoi(data, 0, 3);
             CHECK(val == 123);
+            const auto val2 = naive_atoi(data, 0, 6);
+            CHECK(val2 == 123456);
+            const auto val3 = naive_atoi(data, 2, 4);
+            CHECK(val3 == 3456);
         }
         SUBCASE("null data") {
             const auto val = naive_atoi(nullptr, 0, 3);
